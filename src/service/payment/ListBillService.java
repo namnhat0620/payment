@@ -1,16 +1,16 @@
-package payment.src.service.payment;
+package src.service.payment;
 
 import java.util.List;
 
-import payment.src.domain.Bill;
-import payment.src.service.storage.BillStorageService;
+import src.domain.Bill;
+import src.service.storage.BillStorageService;
 
 public class ListBillService implements PaymentService {
 
     private final BillStorageService billStorageService = new BillStorageService();
 
     @Override
-    public void excute(String[] args) {
+    public void execute(String[] args) {
         List<Bill> bills = billStorageService.findAll();
 
         // Print header

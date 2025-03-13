@@ -1,20 +1,29 @@
-package payment.src.service.payment;
+package src.service.payment;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import payment.src.domain.Bill;
-import payment.src.domain.Constants;
-import payment.src.enumeration.State;
-import payment.src.service.storage.BillStorageService;
-import payment.src.service.storage.CashStorageService;
+import src.domain.Balance;
+import src.domain.Bill;
+import src.domain.Constants;
+import src.domain.PaymentHistory;
+import src.helper.BillPaymentProcessor;
+import src.service.storage.BalanceStorageService;
+import src.service.storage.BillStorageService;
+import src.service.storage.PaymentHistoryStorageService;
+import src.validator.BillValidator;
 
 public class PayBillService implements PaymentService {
 
     private final BillStorageService billStorageService = new BillStorageService();
-    private final CashStorageService cashStorageService = new CashStorageService();
+    private final BalanceStorageService balanceStorageService = new BalanceStorageService();
+    private final PaymentHistoryStorageService paymentHistoryStorageService = new PaymentHistoryStorageService();
+    private final BillValidator billValidator = new BillValidator();
+    private final BillPaymentProcessor billPaymentProcessor = new BillPaymentProcessor(
+            balanceStorageService,
+            billStorageService);
 
-    public void excute(String[] args) {
+    public void execute(String[] args) {
         if (args.length < 2) {
             throw new IllegalArgumentException("Please input your bill id.");
         }
@@ -22,62 +31,32 @@ public class PayBillService implements PaymentService {
         // Get bill
         List<Integer> billIds = getBillIds(args);
         List<Bill> bills = billStorageService.findByIds(billIds);
-        if (bills.size() != billIds.size()) {
-            System.out.println("Sorry! Not found a bill with such id");
+
+        // Validate bill
+        if (!billValidator.validateBills(billIds, bills)) {
             return;
         }
-        int balance = cashStorageService.findFirst().orElse(0);
+
+        // Assume that only 1 user use this application
+        // TODO: Implement authentication and allow multiple users
+        Balance balance = balanceStorageService.findFirst().orElse(new Balance(1, 0));
 
         // Pay bill
-        if (payBill(bills, balance)) {
+        if (billPaymentProcessor.payBill(bills, balance)) {
             System.out.println("Payment has been completed for Bill with id "
                     + billIds.stream().map(String::valueOf)
                             .collect(Collectors.joining(Constants.DELIMITER)));
 
             // Make sure to show the latest balance
-            System.out.println("Your current balance is: " + cashStorageService.findFirst().orElse(0));
+            System.out.println(
+                    "Your current balance is: " + balanceStorageService.findFirst().map(Balance::getAmount).orElse(0));
         }
 
         // Save payment history
+        bills.stream().map(PaymentHistory::new).forEach(paymentHistoryStorageService::save);
     }
 
     private List<Integer> getBillIds(String[] args) {
         return List.of(args).subList(1, args.length).stream().map(Integer::valueOf).toList();
-    }
-
-    private boolean checkBalance(List<Bill> bills, int balance) {
-        int totalAmount = bills.stream().mapToInt(Bill::getAmount).sum();
-        if (balance < totalAmount) {
-            System.out.println("Sorry! Not enough fund to proceed with payment.");
-            return false;
-        }
-        return true;
-    }
-
-    private boolean payBill(List<Bill> bills, int balance) {
-        checkBalance(bills, balance);
-
-        for (Bill bill : bills) {
-            // Deduct balance
-            int remainingBalance = balance - bill.getAmount();
-            try {
-                cashStorageService.save(remainingBalance);
-            } catch (Exception e) {
-                System.out.println("Failed to pay bill. Please try again.");
-                return false;
-            }
-
-            try {
-                bill.setState(State.PROCESSED);
-                billStorageService.save(bill);
-            } catch (Exception e) {
-                System.out.println("Failed to pay bill. Please try again.");
-
-                // Rollback balance
-                cashStorageService.save(balance);
-                return false;
-            }
-        }
-        return true;
     }
 }

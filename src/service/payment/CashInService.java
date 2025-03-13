@@ -1,17 +1,20 @@
-package payment.src.service.payment;
+package src.service.payment;
 
-import payment.src.service.storage.CashStorageService;
+import src.domain.Balance;
+import src.service.storage.BalanceStorageService;
 
 public class CashInService implements PaymentService {
 
-    private final CashStorageService cashStorageService = new CashStorageService();
+    private final BalanceStorageService balanceStorageService = new BalanceStorageService();
 
-    public void excute(String[] args) {
+    public void execute(String[] args) {
         if (args.length < 2) {
             throw new IllegalArgumentException("Please input your cash.");
         }
-        Integer balance = cashStorageService.findFirst().orElse(0) + Integer.valueOf(args[1]);
-        cashStorageService.save(balance);
+        Balance balance = balanceStorageService.findFirst().orElse(new Balance(1, 0));
+        balance.setAmount(balance.getAmount() + Integer.parseInt(args[1]));
+
+        balanceStorageService.update(balance);
 
         System.out.println("Your available balance: " + balance);
     }

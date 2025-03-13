@@ -1,11 +1,10 @@
-package payment.src.domain;
+package src.domain;
 
 import java.time.LocalDate;
 
-import payment.src.enumeration.State;
+import src.enumeration.State;
 
-public class Bill {
-    private int id;
+public class Bill extends IdentificationEntity {
     private String type;
     private int amount;
     private LocalDate dueDate;
@@ -13,7 +12,7 @@ public class Bill {
     private String provider;
 
     public Bill(int id, String type, int amount, LocalDate dueDate, State state, String provider) {
-        this.id = id;
+        super(id);
         this.type = type;
         this.amount = amount;
         this.dueDate = dueDate;
@@ -21,10 +20,22 @@ public class Bill {
         this.provider = provider;
     }
 
+    public int getAmount() {
+        return amount;
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
     @Override
     public String toString() {
         return new StringBuilder()
-                .append(id).append(Constants.DELIMITER)
+                .append(super.getId()).append(Constants.DELIMITER)
                 .append(type).append(Constants.DELIMITER)
                 .append(amount).append(Constants.DELIMITER)
                 .append(dueDate.format(Constants.DATE_FORMATTER)).append(Constants.DELIMITER)
@@ -35,24 +46,12 @@ public class Bill {
 
     public String toString(String delimiter) {
         return new StringBuilder()
-                .append(id).append(delimiter)
+                .append(super.getId()).append(delimiter)
                 .append(type).append(delimiter)
                 .append(amount).append(delimiter)
                 .append(dueDate.format(Constants.DATE_FORMATTER)).append(delimiter)
                 .append(state).append(delimiter)
                 .append(provider).append(delimiter)
                 .toString();
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public int getAmount() {
-        return amount;
-    }
-
-    public void setState(State state) {
-        this.state = state;
     }
 }

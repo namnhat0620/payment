@@ -1,4 +1,4 @@
-package payment.src.domain;
+package src.domain;
 
 import java.time.format.DateTimeFormatter;
 

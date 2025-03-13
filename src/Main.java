@@ -1,8 +1,8 @@
-package payment.src;
+package src;
 
-import payment.src.enumeration.Command;
-import payment.src.service.payment.PaymentFactory;
-import payment.src.service.payment.PaymentService;
+import src.enumeration.Command;
+import src.service.payment.PaymentFactory;
+import src.service.payment.PaymentService;
 
 public class Main {
 
@@ -13,6 +13,6 @@ public class Main {
 
         PaymentFactory paymentFactory = new PaymentFactory();
         PaymentService paymentService = paymentFactory.getPaymentService(Command.fromValue(args[0]));
-        paymentService.excute(args);
+        paymentService.execute(args);
     }
 }

@@ -1,4 +1,4 @@
-package payment.src.enumeration;
+package src.enumeration;
 
 public enum State {
     NOT_PAID,

@@ -1,9 +1,10 @@
-package payment.src.enumeration;
+package src.enumeration;
 
 public enum Command {
     CASH_IN,
     LIST_BILL,
-    PAY_BILL;
+    PAY,
+    LIST_PAYMENT;
 
     public static Command fromValue(String value) {
         for (Command command : values()) {

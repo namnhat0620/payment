@@ -1,5 +1,5 @@
-package payment.src.service.payment;
+package src.service.payment;
 
 public interface PaymentService {
-    public void excute(String[] arg);
+    public void execute(String[] arg);
 }
